@@ -14,8 +14,13 @@ func createUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, errID := createUser(newUser)
+	if err := validateStruct(newUser); err != nil {
+		res := &ResponseValidationError{*err}
+		httpErrorJSON(w, res, http.StatusBadRequest)
+		return
+	}
 
+	id, errID := createUser(newUser)
 	if errID != nil {
 		http.Error(w, "Failed to create new user", http.StatusInternalServerError)
 		return
@@ -66,8 +71,13 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updatedUser.ID = userID
-	res, err := updateUser(updatedUser)
+	if err := validateStruct(updatedUser); err != nil {
+		res := &ResponseValidationError{*err}
+		httpErrorJSON(w, res, http.StatusBadRequest)
+		return
+	}
+
+	res, err := updateUser(updatedUser, userID)
 	if err != nil {
 		http.Error(w, "Failed to update user", http.StatusInternalServerError)
 		return

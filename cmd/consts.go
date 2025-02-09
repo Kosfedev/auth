@@ -11,7 +11,7 @@ const (
 
 const (
 	// AdminRole is ...
-	AdminRole Role = iota + 1
+	AdminRole Role = iota
 	// UserRole is ...
 	UserRole
 )

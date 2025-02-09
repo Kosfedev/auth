@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"reflect"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -76,7 +77,7 @@ func getUser(id int) (*UserData, error) {
 	return user, nil
 }
 
-func updateUser(user *UpdateUserData) (*UserData, error) {
+func updateUser(user *UpdateUserData, id int) (*UserData, error) {
 	pgDSN, ok := os.LookupEnv("PG_DSN")
 	if !ok {
 		return nil, errors.New("PG_DSN environment variable not set")
@@ -91,11 +92,17 @@ func updateUser(user *UpdateUserData) (*UserData, error) {
 
 	builderUpdate := sq.Update("auth").
 		PlaceholderFormat(sq.Dollar).
-		Set("name", user.Name).
-		Set("email", user.Email).
-		Set("role", user.Role).
 		Set("updated_at", time.Now()).
-		Where(sq.Eq{"id": user.ID})
+		Where(sq.Eq{"id": id})
+
+	values := reflect.ValueOf(*user)
+	types := values.Type()
+
+	for i := 0; i < values.NumField(); i++ {
+		if value := values.Field(i); !value.IsNil() {
+			builderUpdate = builderUpdate.Set(types.Field(i).Name, value.Interface())
+		}
+	}
 
 	query, args, err := builderUpdate.ToSql()
 	if err != nil {
@@ -108,7 +115,7 @@ func updateUser(user *UpdateUserData) (*UserData, error) {
 		return nil, err
 	}
 
-	updatedUser, err := getUser(user.ID)
+	updatedUser, err := getUser(id)
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
+	"net/http"
 	"strconv"
 
 	"github.com/jackc/pgx/v5"
@@ -21,4 +23,13 @@ func parseID(idStr string) (int, error) {
 	}
 
 	return int(id), nil
+}
+
+func httpErrorJSON(w http.ResponseWriter, data interface{}, code int) {
+	w.WriteHeader(code)
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		http.Error(w, "Failed to encode create user validation errors", http.StatusInternalServerError)
+		return
+	}
 }
