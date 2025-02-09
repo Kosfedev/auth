@@ -22,7 +22,7 @@ func createUser(user *NewUserData) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer con.Close(ctx)
+	defer closeConOrLog(ctx, con)
 
 	builderInsert := sq.Insert("auth").
 		PlaceholderFormat(sq.Dollar).
@@ -55,9 +55,12 @@ func getUser(id int) (*UserData, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer con.Close(ctx)
+	defer closeConOrLog(ctx, con)
 
-	builderSelect := getSelectorByID(id)
+	builderSelect := sq.Select("id", "name", "email", "role", "created_at", "updated_at").
+		From("auth").
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{"id": id})
 
 	query, args, err := builderSelect.ToSql()
 	if err != nil {
@@ -84,7 +87,7 @@ func updateUser(user *UpdateUserData) (*UserData, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer con.Close(ctx)
+	defer closeConOrLog(ctx, con)
 
 	builderUpdate := sq.Update("auth").
 		PlaceholderFormat(sq.Dollar).
@@ -102,13 +105,6 @@ func updateUser(user *UpdateUserData) (*UserData, error) {
 	_, err = con.Query(ctx, query, args...)
 	if err != nil {
 		fmt.Printf("%s\n", err)
-		return nil, err
-	}
-
-	builderSelect := getSelectorByID(user.ID)
-
-	query, args, err = builderSelect.ToSql()
-	if err != nil {
 		return nil, err
 	}
 
@@ -131,7 +127,7 @@ func deleteUser(id int) error {
 	if err != nil {
 		return err
 	}
-	defer con.Close(ctx)
+	defer closeConOrLog(ctx, con)
 
 	builderDelete := sq.Delete("auth").
 		PlaceholderFormat(sq.Dollar).
@@ -149,13 +145,4 @@ func deleteUser(id int) error {
 	}
 
 	return nil
-}
-
-func getSelectorByID(id int) *sq.SelectBuilder {
-	builderSelect := sq.Select("id", "name", "email", "role", "created_at", "updated_at").
-		From("auth").
-		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{"id": id})
-
-	return &builderSelect
 }
