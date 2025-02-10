@@ -1,35 +1,30 @@
 package main
 
 import (
-	"context"
-	"errors"
 	"fmt"
-	"os"
 	"reflect"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v5"
+)
+
+const (
+	tableAuth       = "auth"
+	columnID        = "id"
+	columnName      = "name"
+	columnEmail     = "email"
+	columnRole      = "role"
+	columnPassword  = "password"
+	columnCreatedAt = "created_at"
+	columnUpdatedAt = "updated_at"
 )
 
 func createUser(user *NewUserData) (int, error) {
-	pgDSN, ok := os.LookupEnv("PG_DSN")
-	if !ok {
-		return 0, errors.New("PG_DSN environment variable not set")
-	}
-
-	ctx := context.Background()
-	con, err := pgx.Connect(ctx, pgDSN)
-	if err != nil {
-		return 0, err
-	}
-	defer closeConOrLog(ctx, con)
-
-	builderInsert := sq.Insert("auth").
+	builderInsert := sq.Insert(tableAuth).
 		PlaceholderFormat(sq.Dollar).
-		Columns("name", "email", "role", "password").
+		Columns(columnName, columnEmail, columnRole, columnPassword).
 		Values(user.Name, user.Email, user.Role, user.Password).
-		Suffix("RETURNING id")
+		Suffix(fmt.Sprintf("RETURNING %v", columnID))
 
 	query, args, err := builderInsert.ToSql()
 	if err != nil {
@@ -46,22 +41,10 @@ func createUser(user *NewUserData) (int, error) {
 }
 
 func getUser(id int) (*UserData, error) {
-	pgDSN, ok := os.LookupEnv("PG_DSN")
-	if !ok {
-		return nil, errors.New("PG_DSN environment variable not set")
-	}
-
-	ctx := context.Background()
-	con, err := pgx.Connect(ctx, pgDSN)
-	if err != nil {
-		return nil, err
-	}
-	defer closeConOrLog(ctx, con)
-
-	builderSelect := sq.Select("id", "name", "email", "role", "created_at", "updated_at").
-		From("auth").
+	builderSelect := sq.Select(columnID, columnName, columnEmail, columnRole, columnCreatedAt, columnUpdatedAt).
+		From(tableAuth).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{"id": id})
+		Where(sq.Eq{columnID: id})
 
 	query, args, err := builderSelect.ToSql()
 	if err != nil {
@@ -78,22 +61,11 @@ func getUser(id int) (*UserData, error) {
 }
 
 func updateUser(user *UpdateUserData, id int) (*UserData, error) {
-	pgDSN, ok := os.LookupEnv("PG_DSN")
-	if !ok {
-		return nil, errors.New("PG_DSN environment variable not set")
-	}
-
-	ctx := context.Background()
-	con, err := pgx.Connect(ctx, pgDSN)
-	if err != nil {
-		return nil, err
-	}
-	defer closeConOrLog(ctx, con)
-
-	builderUpdate := sq.Update("auth").
+	builderUpdate := sq.Update(tableAuth).
 		PlaceholderFormat(sq.Dollar).
-		Set("updated_at", time.Now()).
-		Where(sq.Eq{"id": id}).Suffix("RETURNING id, name, email, role, created_at, updated_at")
+		Set(columnUpdatedAt, time.Now()).
+		Where(sq.Eq{columnID: id}).
+		Suffix(fmt.Sprintf("RETURNING %v, %v, %v, %v, %v, %v", columnID, columnName, columnEmail, columnRole, columnCreatedAt, columnUpdatedAt))
 
 	values := reflect.ValueOf(*user)
 	types := values.Type()
@@ -112,7 +84,6 @@ func updateUser(user *UpdateUserData, id int) (*UserData, error) {
 	var updatedUser = &UserData{}
 	err = con.QueryRow(ctx, query, args...).Scan(&updatedUser.ID, &updatedUser.Name, &updatedUser.Email, &updatedUser.Role, &updatedUser.CreatedAt, &updatedUser.UpdatedAt)
 	if err != nil {
-		fmt.Printf("%s\n", err)
 		return nil, err
 	}
 
@@ -120,21 +91,9 @@ func updateUser(user *UpdateUserData, id int) (*UserData, error) {
 }
 
 func deleteUser(id int) error {
-	pgDSN, ok := os.LookupEnv("PG_DSN")
-	if !ok {
-		return errors.New("PG_DSN environment variable not set")
-	}
-
-	ctx := context.Background()
-	con, err := pgx.Connect(ctx, pgDSN)
-	if err != nil {
-		return err
-	}
-	defer closeConOrLog(ctx, con)
-
-	builderDelete := sq.Delete("auth").
+	builderDelete := sq.Delete(tableAuth).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{"id": id})
+		Where(sq.Eq{columnID: id})
 
 	query, args, err := builderDelete.ToSql()
 	if err != nil {
@@ -143,7 +102,6 @@ func deleteUser(id int) error {
 
 	_, err = con.Exec(ctx, query, args...)
 	if err != nil {
-		fmt.Printf("%v\n", err)
 		return err
 	}
 

@@ -4,8 +4,9 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+var validate = validator.New()
+
 func validateStruct(data interface{}) *[]ValidationError {
-	validate := validator.New()
 	var errors []ValidationError
 
 	err := validate.Struct(data)
