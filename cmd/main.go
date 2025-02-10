@@ -22,7 +22,7 @@ const (
 )
 
 var con *pgx.Conn
-var ctx context.Context
+var pgDSN string
 
 func load(path string) error {
 	err := godotenv.Load(path)
@@ -38,20 +38,27 @@ func init() {
 	if err != nil {
 		log.Fatalf("failed to load config \"%v\": %v", configPath, err)
 	}
-	pgDSN, ok := os.LookupEnv(dsnEnvName)
-	if !ok {
-		panic("DSN environment variable not set")
+	pgDSN = os.Getenv(dsnEnvName)
+	if len(pgDSN) == 0 {
+		log.Fatalf("DSN environment variable not set")
 	}
+}
 
-	ctx = context.Background()
-	con, err = pgx.Connect(ctx, pgDSN)
-	if err != nil {
-		panic(err.Error())
+func closeConOrLog(ctx context.Context, con *pgx.Conn) {
+	if err := con.Close(ctx); err != nil {
+		log.Printf("Error while closing connection: %+v\n", err)
 	}
 }
 
 func main() {
+	var err error
+	ctx := context.Background()
+	con, err = pgx.Connect(ctx, pgDSN)
+	if err != nil {
+		log.Fatalf("failed to establish connection to \"%v\": %v", pgDSN, err.Error())
+	}
 	defer closeConOrLog(ctx, con)
+
 	r := chi.NewRouter()
 	r.Post(usersPostfix, createUserHandler)
 	r.Get(userPostfix, getUserHandler)
@@ -65,7 +72,7 @@ func main() {
 		WriteTimeout: defaultTimeout,
 	}
 
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 	}

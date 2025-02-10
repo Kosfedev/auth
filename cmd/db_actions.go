@@ -1,8 +1,8 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"reflect"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -19,11 +19,16 @@ const (
 	columnUpdatedAt = "updated_at"
 )
 
-func createUser(user *NewUserData) (int, error) {
+func createUser(ctx context.Context, user *NewUserData) (int64, error) {
+	passHash, err := hashPassword(user.Password)
+	if err != nil {
+		return 0, err
+	}
+
 	builderInsert := sq.Insert(tableAuth).
 		PlaceholderFormat(sq.Dollar).
 		Columns(columnName, columnEmail, columnRole, columnPassword).
-		Values(user.Name, user.Email, user.Role, user.Password).
+		Values(user.Name, user.Email, user.Role, passHash).
 		Suffix(fmt.Sprintf("RETURNING %v", columnID))
 
 	query, args, err := builderInsert.ToSql()
@@ -31,7 +36,7 @@ func createUser(user *NewUserData) (int, error) {
 		return 0, err
 	}
 
-	var userID int
+	var userID int64
 	err = con.QueryRow(ctx, query, args...).Scan(&userID)
 	if err != nil {
 		return 0, err
@@ -40,7 +45,7 @@ func createUser(user *NewUserData) (int, error) {
 	return userID, nil
 }
 
-func getUser(id int) (*UserData, error) {
+func getUser(ctx context.Context, id int64) (*UserData, error) {
 	builderSelect := sq.Select(columnID, columnName, columnEmail, columnRole, columnCreatedAt, columnUpdatedAt).
 		From(tableAuth).
 		PlaceholderFormat(sq.Dollar).
@@ -60,20 +65,23 @@ func getUser(id int) (*UserData, error) {
 	return user, nil
 }
 
-func updateUser(user *UpdateUserData, id int) (*UserData, error) {
+func updateUser(ctx context.Context, user *UpdateUserData, id int64) (*UserData, error) {
 	builderUpdate := sq.Update(tableAuth).
 		PlaceholderFormat(sq.Dollar).
 		Set(columnUpdatedAt, time.Now()).
 		Where(sq.Eq{columnID: id}).
 		Suffix(fmt.Sprintf("RETURNING %v, %v, %v, %v, %v, %v", columnID, columnName, columnEmail, columnRole, columnCreatedAt, columnUpdatedAt))
 
-	values := reflect.ValueOf(*user)
-	types := values.Type()
+	if user.Name != nil {
+		builderUpdate = builderUpdate.Set(columnName, *user.Name)
+	}
 
-	for i := 0; i < values.NumField(); i++ {
-		if value := values.Field(i); !value.IsNil() {
-			builderUpdate = builderUpdate.Set(types.Field(i).Name, value.Interface())
-		}
+	if user.Email != nil {
+		builderUpdate = builderUpdate.Set(columnEmail, *user.Email)
+	}
+
+	if user.Role != nil {
+		builderUpdate = builderUpdate.Set(columnRole, *user.Role)
 	}
 
 	query, args, err := builderUpdate.ToSql()
@@ -90,7 +98,7 @@ func updateUser(user *UpdateUserData, id int) (*UserData, error) {
 	return updatedUser, nil
 }
 
-func deleteUser(id int) error {
+func deleteUser(ctx context.Context, id int64) error {
 	builderDelete := sq.Delete(tableAuth).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{columnID: id})

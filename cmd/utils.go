@@ -1,28 +1,20 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
-	"github.com/jackc/pgx/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
-func closeConOrLog(ctx context.Context, con *pgx.Conn) {
-	if err := con.Close(ctx); err != nil {
-		log.Printf("Error while closing connection: %+v\n", err)
-	}
-}
-
-func parseID(idStr string) (int, error) {
+func parseID(idStr string) (int64, error) {
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		return 0, err
 	}
 
-	return int(id), nil
+	return id, nil
 }
 
 func httpErrorJSON(w http.ResponseWriter, data interface{}, code int) {
@@ -32,4 +24,9 @@ func httpErrorJSON(w http.ResponseWriter, data interface{}, code int) {
 		http.Error(w, "Failed to encode create user validation errors", http.StatusInternalServerError)
 		return
 	}
+}
+
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+	return string(bytes), err
 }

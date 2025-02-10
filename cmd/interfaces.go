@@ -17,7 +17,7 @@ type NewUserData struct {
 
 // UserData is ...
 type UserData struct {
-	ID        int        `json:"id"`
+	ID        int64      `json:"id"`
 	Name      string     `json:"name"`
 	Email     string     `json:"email"`
 	Role      Role       `json:"role"`
@@ -48,5 +48,5 @@ type ResponseValidationError struct {
 
 // ResponseUserID is ...
 type ResponseUserID struct {
-	ID int `json:"id"`
+	ID int64 `json:"id"`
 }
