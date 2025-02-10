@@ -93,7 +93,7 @@ func updateUser(user *UpdateUserData, id int) (*UserData, error) {
 	builderUpdate := sq.Update("auth").
 		PlaceholderFormat(sq.Dollar).
 		Set("updated_at", time.Now()).
-		Where(sq.Eq{"id": id})
+		Where(sq.Eq{"id": id}).Suffix("RETURNING id, name, email, role, created_at, updated_at")
 
 	values := reflect.ValueOf(*user)
 	types := values.Type()
@@ -109,14 +109,10 @@ func updateUser(user *UpdateUserData, id int) (*UserData, error) {
 		return nil, err
 	}
 
-	_, err = con.Query(ctx, query, args...)
+	var updatedUser = &UserData{}
+	err = con.QueryRow(ctx, query, args...).Scan(&updatedUser.ID, &updatedUser.Name, &updatedUser.Email, &updatedUser.Role, &updatedUser.CreatedAt, &updatedUser.UpdatedAt)
 	if err != nil {
 		fmt.Printf("%s\n", err)
-		return nil, err
-	}
-
-	updatedUser, err := getUser(id)
-	if err != nil {
 		return nil, err
 	}
 
