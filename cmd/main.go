@@ -33,7 +33,7 @@ func load(path string) error {
 	return nil
 }
 
-func init() {
+func initDeps() {
 	err := load(configPath)
 	if err != nil {
 		log.Fatalf("failed to load config \"%v\": %v", configPath, err)
@@ -44,20 +44,19 @@ func init() {
 	}
 }
 
-func closeConOrLog(ctx context.Context, con *pgx.Conn) {
-	if err := con.Close(ctx); err != nil {
-		log.Printf("Error while closing connection: %+v\n", err)
-	}
-}
-
 func main() {
+	initDeps()
 	var err error
 	ctx := context.Background()
 	con, err = pgx.Connect(ctx, pgDSN)
 	if err != nil {
 		log.Fatalf("failed to establish connection to \"%v\": %v", pgDSN, err.Error())
 	}
-	defer closeConOrLog(ctx, con)
+	defer func(ctx context.Context, con *pgx.Conn) {
+		if err := con.Close(ctx); err != nil {
+			log.Printf("Error while closing connection: %+v\n", err)
+		}
+	}(ctx, con)
 
 	r := chi.NewRouter()
 	r.Post(usersPostfix, createUserHandler)

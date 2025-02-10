@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi"
 )
@@ -38,7 +39,7 @@ func createUserHandler(w http.ResponseWriter, r *http.Request) {
 
 func getUserHandler(w http.ResponseWriter, r *http.Request) {
 	userIDStr := chi.URLParam(r, "id")
-	userID, err := parseID(userIDStr)
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
@@ -60,7 +61,7 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 	updatedUser := &UpdateUserData{}
 	userIDStr := chi.URLParam(r, "id")
-	userID, err := parseID(userIDStr)
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
@@ -93,7 +94,7 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 func deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	userIDStr := chi.URLParam(r, "id")
-	userID, err := parseID(userIDStr)
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return

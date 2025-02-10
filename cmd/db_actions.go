@@ -75,11 +75,9 @@ func updateUser(ctx context.Context, user *UpdateUserData, id int64) (*UserData,
 	if user.Name != nil {
 		builderUpdate = builderUpdate.Set(columnName, *user.Name)
 	}
-
 	if user.Email != nil {
 		builderUpdate = builderUpdate.Set(columnEmail, *user.Email)
 	}
-
 	if user.Role != nil {
 		builderUpdate = builderUpdate.Set(columnRole, *user.Role)
 	}
