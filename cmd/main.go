@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/Kosfedev/auth/internal/config"
+	"github.com/Kosfedev/auth/internal/repository"
+	"github.com/Kosfedev/auth/internal/repository/user"
 	"github.com/go-chi/chi"
 	"github.com/jackc/pgx/v5"
 )
@@ -19,7 +21,7 @@ const (
 	defaultTimeout = time.Second * 5
 )
 
-var con *pgx.Conn
+var userRep repository.UserRepository
 
 func main() {
 	err := config.Load(configPath)
@@ -34,7 +36,7 @@ func main() {
 	}
 	pgDSN := cnf.DSN()
 
-	con, err = pgx.Connect(ctx, pgDSN)
+	con, err := pgx.Connect(ctx, pgDSN)
 	if err != nil {
 		log.Fatalf("failed to establish connection to \"%v\": %v", pgDSN, err.Error())
 	}
@@ -43,6 +45,7 @@ func main() {
 			log.Printf("Error while closing connection: %+v\n", err)
 		}
 	}(ctx, con)
+	userRep = user.NewRepository(con)
 
 	r := chi.NewRouter()
 	r.Post(usersPostfix, createUserHandler)

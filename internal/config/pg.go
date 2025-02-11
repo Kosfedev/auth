@@ -17,10 +17,6 @@ type pgConfig struct {
 	dsn string
 }
 
-func (cfg *pgConfig) DSN() string {
-	return cfg.dsn
-}
-
 func NewPGConfig() (PGConfig, error) {
 	dsn := os.Getenv(dsnEnvName)
 	if len(dsn) == 0 {
@@ -30,4 +26,8 @@ func NewPGConfig() (PGConfig, error) {
 	return &pgConfig{
 		dsn: dsn,
 	}, nil
+}
+
+func (cfg *pgConfig) DSN() string {
+	return cfg.dsn
 }

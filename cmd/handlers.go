@@ -5,23 +5,24 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Kosfedev/auth/internal/model"
 	"github.com/go-chi/chi"
 )
 
 func createUserHandler(w http.ResponseWriter, r *http.Request) {
-	newUser := &NewUserData{}
-	if err := json.NewDecoder(r.Body).Decode(newUser); err != nil {
+	user := &model.NewUserData{}
+	if err := json.NewDecoder(r.Body).Decode(user); err != nil {
 		http.Error(w, "Failed to decode new user data", http.StatusBadRequest)
 		return
 	}
 
-	if err := validateStruct(newUser); err != nil {
+	if err := validateStruct(user); err != nil {
 		res := &ResponseValidationError{*err}
 		httpErrorJSON(w, res, http.StatusBadRequest)
 		return
 	}
 
-	id, errID := createUser(r.Context(), newUser)
+	id, errID := userRep.Create(r.Context(), user)
 	if errID != nil {
 		http.Error(w, "Failed to create new user", http.StatusInternalServerError)
 		return
@@ -45,7 +46,7 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := getUser(r.Context(), userID)
+	user, err := userRep.Get(r.Context(), userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -59,7 +60,7 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateUserHandler(w http.ResponseWriter, r *http.Request) {
-	updatedUser := &UpdateUserData{}
+	updatedUser := &model.UpdatedUserData{}
 	userIDStr := chi.URLParam(r, "id")
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
@@ -78,7 +79,7 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := updateUser(r.Context(), updatedUser, userID)
+	res, err := userRep.Patch(r.Context(), updatedUser, userID)
 	if err != nil {
 		http.Error(w, "Failed to update user", http.StatusInternalServerError)
 		return
@@ -100,7 +101,7 @@ func deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = deleteUser(r.Context(), userID)
+	err = userRep.Delete(r.Context(), userID)
 	if err != nil {
 		http.Error(w, "Failed to delete user", http.StatusInternalServerError)
 		return
