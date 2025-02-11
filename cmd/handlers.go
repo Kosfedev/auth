@@ -23,7 +23,7 @@ func createUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resWithId, errID := userServiceImpl.Create(r.Context(), user)
+	resWithID, errID := userServiceImpl.Create(r.Context(), user)
 	if errID != nil {
 		http.Error(w, "Failed to create new user", http.StatusInternalServerError)
 		return
@@ -31,7 +31,7 @@ func createUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(resWithId); err != nil {
+	if err := json.NewEncoder(w).Encode(resWithID); err != nil {
 		http.Error(w, "Failed to encode new user id", http.StatusInternalServerError)
 		return
 	}

@@ -5,6 +5,7 @@ import (
 	modelRepo "github.com/Kosfedev/auth/internal/repository/user/model"
 )
 
+// UserDataFromRepo is...
 func UserDataFromRepo(userData *modelRepo.UserData) *model.UserData {
 	return &model.UserData{
 		ID:        userData.ID,

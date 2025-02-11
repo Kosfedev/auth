@@ -5,6 +5,7 @@ import (
 	modelHTTP "github.com/Kosfedev/auth/pkg/user_v1"
 )
 
+// UpdatedUserDataFromHTTPToService is...
 func UpdatedUserDataFromHTTPToService(userData *modelHTTP.RequestUpdatedUserData) *model.UpdatedUserData {
 	return &model.UpdatedUserData{
 		Name:  userData.Name,
@@ -13,6 +14,7 @@ func UpdatedUserDataFromHTTPToService(userData *modelHTTP.RequestUpdatedUserData
 	}
 }
 
+// UserDataFromServiceToHTTP is...
 func UserDataFromServiceToHTTP(userData *model.UserData) *modelHTTP.ResponseUserData {
 	return &modelHTTP.ResponseUserData{
 		ID:        userData.ID,

@@ -8,6 +8,7 @@ import (
 	modelHTTP "github.com/Kosfedev/auth/pkg/user_v1"
 )
 
+// Create is...
 func (i *Implementation) Create(ctx context.Context, userData *model.NewUserData) (*modelHTTP.ResponseUserID, error) {
 	id, err := i.userService.Create(ctx, userData)
 	if err != nil {

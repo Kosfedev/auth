@@ -8,6 +8,7 @@ import (
 	modelHTTP "github.com/Kosfedev/auth/pkg/user_v1"
 )
 
+// Patch is...
 func (i *Implementation) Patch(ctx context.Context, userData *modelHTTP.RequestUpdatedUserData, id int64) (*modelHTTP.ResponseUserData, error) {
 	user, err := i.userService.Patch(ctx, converter.UpdatedUserDataFromHTTPToService(userData), id)
 	if err != nil {

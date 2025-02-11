@@ -8,6 +8,7 @@ import (
 	modelHTTP "github.com/Kosfedev/auth/pkg/user_v1"
 )
 
+// Get is...
 func (i *Implementation) Get(ctx context.Context, id int64) (*modelHTTP.ResponseUserData, error) {
 	user, err := i.userService.Get(ctx, id)
 	if err != nil {

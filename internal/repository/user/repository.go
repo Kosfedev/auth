@@ -29,6 +29,7 @@ type repo struct {
 	con *pgx.Conn
 }
 
+// NewRepository is ...
 func NewRepository(con *pgx.Conn) repository.UserRepository {
 	return &repo{
 		con: con,
