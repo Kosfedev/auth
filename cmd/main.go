@@ -4,51 +4,40 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
+	userImplementation "github.com/Kosfedev/auth/internal/api/user"
+	"github.com/Kosfedev/auth/internal/config"
+	userRepository "github.com/Kosfedev/auth/internal/repository/user"
+	userService "github.com/Kosfedev/auth/internal/service/user"
 	"github.com/go-chi/chi"
 	"github.com/jackc/pgx/v5"
-	"github.com/joho/godotenv"
 )
 
 const (
 	configPath     = ".env"
-	dsnEnvName     = "PG_DSN"
 	baseURL        = "localhost:8081"
 	usersPostfix   = "/users"
 	userPostfix    = usersPostfix + "/{id}"
 	defaultTimeout = time.Second * 5
 )
 
-var con *pgx.Conn
-var pgDSN string
+var userServiceImpl *userImplementation.Implementation
 
-func load(path string) error {
-	err := godotenv.Load(path)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func initDeps() {
-	err := load(configPath)
+func main() {
+	err := config.Load(configPath)
 	if err != nil {
 		log.Fatalf("failed to load config \"%v\": %v", configPath, err)
 	}
-	pgDSN = os.Getenv(dsnEnvName)
-	if len(pgDSN) == 0 {
-		log.Fatalf("DSN environment variable not set")
-	}
-}
 
-func main() {
-	initDeps()
-	var err error
 	ctx := context.Background()
-	con, err = pgx.Connect(ctx, pgDSN)
+	cnf, err := config.NewPGConfig()
+	if err != nil {
+		log.Fatalf("failed to get pg config: %s", err.Error())
+	}
+	pgDSN := cnf.DSN()
+
+	con, err := pgx.Connect(ctx, pgDSN)
 	if err != nil {
 		log.Fatalf("failed to establish connection to \"%v\": %v", pgDSN, err.Error())
 	}
@@ -57,6 +46,10 @@ func main() {
 			log.Printf("Error while closing connection: %+v\n", err)
 		}
 	}(ctx, con)
+
+	userRepo := userRepository.NewRepository(con)
+	userSrv := userService.NewService(userRepo)
+	userServiceImpl = userImplementation.NewImplementation(userSrv)
 
 	r := chi.NewRouter()
 	r.Post(usersPostfix, createUserHandler)

@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 func httpErrorJSON(w http.ResponseWriter, data interface{}, code int) {
@@ -14,9 +12,4 @@ func httpErrorJSON(w http.ResponseWriter, data interface{}, code int) {
 		http.Error(w, "Failed to encode create user validation errors", http.StatusInternalServerError)
 		return
 	}
-}
-
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	return string(bytes), err
 }
