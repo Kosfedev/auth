@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/Kosfedev/auth/internal/config"
-	"github.com/Kosfedev/auth/internal/repository"
-	"github.com/Kosfedev/auth/internal/repository/user"
+	userRepository "github.com/Kosfedev/auth/internal/repository/user"
+	"github.com/Kosfedev/auth/internal/service"
+	userService "github.com/Kosfedev/auth/internal/service/user"
 	"github.com/go-chi/chi"
 	"github.com/jackc/pgx/v5"
 )
@@ -21,7 +22,7 @@ const (
 	defaultTimeout = time.Second * 5
 )
 
-var userRep repository.UserRepository
+var userSrv service.UserService
 
 func main() {
 	err := config.Load(configPath)
@@ -45,7 +46,9 @@ func main() {
 			log.Printf("Error while closing connection: %+v\n", err)
 		}
 	}(ctx, con)
-	userRep = user.NewRepository(con)
+
+	userRepo := userRepository.NewRepository(con)
+	userSrv = userService.NewService(userRepo)
 
 	r := chi.NewRouter()
 	r.Post(usersPostfix, createUserHandler)

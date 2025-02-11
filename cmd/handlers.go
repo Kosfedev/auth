@@ -22,7 +22,7 @@ func createUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, errID := userRep.Create(r.Context(), user)
+	id, errID := userSrv.Create(r.Context(), user)
 	if errID != nil {
 		http.Error(w, "Failed to create new user", http.StatusInternalServerError)
 		return
@@ -46,7 +46,7 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := userRep.Get(r.Context(), userID)
+	user, err := userSrv.Get(r.Context(), userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -79,7 +79,7 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := userRep.Patch(r.Context(), updatedUser, userID)
+	res, err := userSrv.Patch(r.Context(), updatedUser, userID)
 	if err != nil {
 		http.Error(w, "Failed to update user", http.StatusInternalServerError)
 		return
@@ -101,7 +101,7 @@ func deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = userRep.Delete(r.Context(), userID)
+	err = userSrv.Delete(r.Context(), userID)
 	if err != nil {
 		http.Error(w, "Failed to delete user", http.StatusInternalServerError)
 		return
