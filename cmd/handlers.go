@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/Kosfedev/auth/internal/model"
+	modelHTTP "github.com/Kosfedev/auth/pkg/user_v1"
 	"github.com/go-chi/chi"
 )
 
@@ -17,22 +18,20 @@ func createUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := validateStruct(user); err != nil {
-		res := &ResponseValidationError{*err}
+		res := &modelHTTP.ResponseValidationError{Errors: *err}
 		httpErrorJSON(w, res, http.StatusBadRequest)
 		return
 	}
 
-	id, errID := userSrv.Create(r.Context(), user)
+	resWithId, errID := userServiceImpl.Create(r.Context(), user)
 	if errID != nil {
 		http.Error(w, "Failed to create new user", http.StatusInternalServerError)
 		return
 	}
 
-	res := ResponseUserID{ID: id}
-
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(res); err != nil {
+	if err := json.NewEncoder(w).Encode(resWithId); err != nil {
 		http.Error(w, "Failed to encode new user id", http.StatusInternalServerError)
 		return
 	}
@@ -46,7 +45,7 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := userSrv.Get(r.Context(), userID)
+	user, err := userServiceImpl.Get(r.Context(), userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -60,7 +59,7 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateUserHandler(w http.ResponseWriter, r *http.Request) {
-	updatedUser := &model.UpdatedUserData{}
+	updatedUser := &modelHTTP.RequestUpdatedUserData{}
 	userIDStr := chi.URLParam(r, "id")
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
@@ -74,12 +73,12 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := validateStruct(updatedUser); err != nil {
-		res := &ResponseValidationError{*err}
+		res := &modelHTTP.ResponseValidationError{Errors: *err}
 		httpErrorJSON(w, res, http.StatusBadRequest)
 		return
 	}
 
-	res, err := userSrv.Patch(r.Context(), updatedUser, userID)
+	resUpdatedUser, err := userServiceImpl.Patch(r.Context(), updatedUser, userID)
 	if err != nil {
 		http.Error(w, "Failed to update user", http.StatusInternalServerError)
 		return
@@ -87,7 +86,7 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(res); err != nil {
+	if err := json.NewEncoder(w).Encode(resUpdatedUser); err != nil {
 		http.Error(w, "Failed to encode updated user id", http.StatusInternalServerError)
 		return
 	}
@@ -101,7 +100,7 @@ func deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = userSrv.Delete(r.Context(), userID)
+	err = userServiceImpl.Delete(r.Context(), userID)
 	if err != nil {
 		http.Error(w, "Failed to delete user", http.StatusInternalServerError)
 		return

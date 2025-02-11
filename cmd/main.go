@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
+	userImplementation "github.com/Kosfedev/auth/internal/api/user"
 	"github.com/Kosfedev/auth/internal/config"
 	userRepository "github.com/Kosfedev/auth/internal/repository/user"
-	"github.com/Kosfedev/auth/internal/service"
 	userService "github.com/Kosfedev/auth/internal/service/user"
 	"github.com/go-chi/chi"
 	"github.com/jackc/pgx/v5"
@@ -22,7 +22,7 @@ const (
 	defaultTimeout = time.Second * 5
 )
 
-var userSrv service.UserService
+var userServiceImpl *userImplementation.Implementation
 
 func main() {
 	err := config.Load(configPath)
@@ -48,7 +48,8 @@ func main() {
 	}(ctx, con)
 
 	userRepo := userRepository.NewRepository(con)
-	userSrv = userService.NewService(userRepo)
+	userSrv := userService.NewService(userRepo)
+	userServiceImpl = userImplementation.NewImplementation(userSrv)
 
 	r := chi.NewRouter()
 	r.Post(usersPostfix, createUserHandler)
