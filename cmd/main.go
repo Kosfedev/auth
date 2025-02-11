@@ -4,17 +4,15 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/Kosfedev/auth/internal/config"
 	"github.com/go-chi/chi"
 	"github.com/jackc/pgx/v5"
-	"github.com/joho/godotenv"
 )
 
 const (
 	configPath     = ".env"
-	dsnEnvName     = "PG_DSN"
 	baseURL        = "localhost:8081"
 	usersPostfix   = "/users"
 	userPostfix    = usersPostfix + "/{id}"
@@ -22,32 +20,20 @@ const (
 )
 
 var con *pgx.Conn
-var pgDSN string
 
-func load(path string) error {
-	err := godotenv.Load(path)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func initDeps() {
-	err := load(configPath)
+func main() {
+	err := config.Load(configPath)
 	if err != nil {
 		log.Fatalf("failed to load config \"%v\": %v", configPath, err)
 	}
-	pgDSN = os.Getenv(dsnEnvName)
-	if len(pgDSN) == 0 {
-		log.Fatalf("DSN environment variable not set")
-	}
-}
 
-func main() {
-	initDeps()
-	var err error
 	ctx := context.Background()
+	cnf, err := config.NewPGConfig()
+	if err != nil {
+		log.Fatalf("failed to get pg config: %s", err.Error())
+	}
+	pgDSN := cnf.DSN()
+
 	con, err = pgx.Connect(ctx, pgDSN)
 	if err != nil {
 		log.Fatalf("failed to establish connection to \"%v\": %v", pgDSN, err.Error())
