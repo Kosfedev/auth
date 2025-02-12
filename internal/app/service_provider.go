@@ -5,17 +5,20 @@ import (
 	"log"
 
 	"github.com/Kosfedev/auth/internal/api/user"
+	"github.com/Kosfedev/auth/internal/client/db"
+	"github.com/Kosfedev/auth/internal/client/db/pg"
 	"github.com/Kosfedev/auth/internal/closer"
 	"github.com/Kosfedev/auth/internal/config"
 	"github.com/Kosfedev/auth/internal/repository"
 	userRepository "github.com/Kosfedev/auth/internal/repository/user"
 	userService "github.com/Kosfedev/auth/internal/service"
-	"github.com/jackc/pgx/v5"
 )
 
 type serviceProvider struct {
-	pgConfig       config.PGConfig
-	pgCon          *pgx.Conn
+	pgConfig config.PGConfig
+
+	dbClient db.Client
+
 	userRepository repository.UserRepository
 	userService    userService.UserService
 	userImpl       *user.Implementation
@@ -38,26 +41,25 @@ func (s *serviceProvider) PGConfig() config.PGConfig {
 	return s.pgConfig
 }
 
-func (s *serviceProvider) PGCon(ctx context.Context) *pgx.Conn {
-	if s.pgCon == nil {
-		dsn := s.PGConfig().DSN()
-		con, err := pgx.Connect(ctx, dsn)
+func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
+	if s.dbClient == nil {
+		cl, err := pg.New(ctx, s.PGConfig().DSN())
 		if err != nil {
-			log.Fatalf("failed to establish connection to \"%v\": %v", dsn, err.Error())
+			log.Fatalf("failed to create db client: %v", err)
 		}
-		closer.Add(func() error {
-			return con.Close(ctx)
-		})
 
-		s.pgCon = con
+		// TODO: add Ping
+		closer.Add(cl.Close)
+
+		s.dbClient = cl
 	}
 
-	return s.pgCon
+	return s.dbClient
 }
 
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
-		s.userRepository = userRepository.NewRepository(s.PGCon(ctx))
+		s.userRepository = userRepository.NewRepository(s.DBClient(ctx))
 	}
 
 	return s.userRepository
