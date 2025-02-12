@@ -37,6 +37,7 @@ func validateStruct(data interface{}) *[]types.ValidationError {
 	return nil
 }
 
+// CreateUserHandler is...
 func CreateUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl userImplementation.Implementation) {
 	user := &model.NewUserData{}
 	if err := json.NewDecoder(r.Body).Decode(user); err != nil {
@@ -64,6 +65,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl u
 	}
 }
 
+// GetUserHandler is...
 func GetUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl userImplementation.Implementation) {
 	userIDStr := chi.URLParam(r, "id")
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
@@ -85,6 +87,7 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl user
 	}
 }
 
+// PutUserHandler is...
 func PutUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl userImplementation.Implementation) {
 	updatedUser := &types.RequestUpdatedUserData{}
 	// TODO: const?
@@ -120,6 +123,7 @@ func PutUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl user
 	}
 }
 
+// DeleteUserHandler is...
 func DeleteUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl userImplementation.Implementation) {
 	// TODO: const?
 	userIDStr := chi.URLParam(r, "id")

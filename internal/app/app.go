@@ -19,11 +19,13 @@ const (
 	defaultTimeout = time.Second * 5
 )
 
+// App is...
 type App struct {
 	serviceProvider *serviceProvider
 	router          *chi.Mux
 }
 
+// NewApp is...
 func NewApp(ctx context.Context) (*App, error) {
 	a := &App{}
 
@@ -35,6 +37,7 @@ func NewApp(ctx context.Context) (*App, error) {
 	return a, nil
 }
 
+// Run is...
 func (a *App) Run() error {
 	defer func() {
 		closer.CloseAll()

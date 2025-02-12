@@ -4,11 +4,8 @@ import (
 	"context"
 	"log"
 
-	userImplementation "github.com/Kosfedev/auth/internal/api/user"
 	"github.com/Kosfedev/auth/internal/app"
 )
-
-var userServiceImpl *userImplementation.Implementation
 
 func main() {
 	ctx := context.Background()
