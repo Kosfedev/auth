@@ -1,6 +1,8 @@
-package user_v1
+package types
 
-import "time"
+import (
+	"time"
+)
 
 // ValidationError is ...
 type ValidationError struct {

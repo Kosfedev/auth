@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/Kosfedev/auth/internal/model"
-	modelHTTP "github.com/Kosfedev/auth/pkg/user_v1"
+	modelHTTP "github.com/Kosfedev/auth/pkg/user_v1/http/types"
 )
 
 // Create is...
