@@ -64,6 +64,10 @@ func (p *pg) QueryRowContext(ctx context.Context, q db.Query, args ...interface{
 	return p.dbc.QueryRow(ctx, q.QueryRaw, args...)
 }
 
+func (p *pg) Ping(ctx context.Context) error {
+	return p.dbc.Ping(ctx)
+}
+
 func (p *pg) Close() {
 	p.dbc.Close()
 }

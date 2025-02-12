@@ -39,8 +39,14 @@ type QueryExecer interface {
 	QueryRowContext(ctx context.Context, q Query, args ...interface{}) pgx.Row
 }
 
+// Pinger интерфейс для проверки соединения с БД
+type Pinger interface {
+	Ping(ctx context.Context) error
+}
+
 // DB интерфейс для работы с БД
 type DB interface {
 	SQLExecer
+	Pinger
 	Close()
 }

@@ -48,7 +48,10 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 			log.Fatalf("failed to create db client: %v", err)
 		}
 
-		// TODO: add Ping
+		err = cl.DB().Ping(ctx)
+		if err != nil {
+			log.Fatalf("ping error: %s", err.Error())
+		}
 		closer.Add(cl.Close)
 
 		s.dbClient = cl
