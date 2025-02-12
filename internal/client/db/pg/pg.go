@@ -17,6 +17,7 @@ type pg struct {
 	dbc *pgxpool.Pool
 }
 
+// NewDB is...
 func NewDB(dbc *pgxpool.Pool) db.DB {
 	return &pg{
 		dbc: dbc,

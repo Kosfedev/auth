@@ -12,6 +12,7 @@ type pgClient struct {
 	masterDBC db.DB
 }
 
+// New is...
 func New(ctx context.Context, dsn string) (db.Client, error) {
 	dbc, err := pgxpool.Connect(ctx, dsn)
 	if err != nil {
