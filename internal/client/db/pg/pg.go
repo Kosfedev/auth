@@ -98,6 +98,7 @@ func (p *pg) Close() {
 	p.dbc.Close()
 }
 
+// MakeContextTx - привязывает трансакцию к контексту
 func MakeContextTx(ctx context.Context, tx pgx.Tx) context.Context {
 	return context.WithValue(ctx, TxKey, tx)
 }
