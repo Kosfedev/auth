@@ -7,20 +7,23 @@ import (
 	"github.com/Kosfedev/auth/internal/api/user"
 	"github.com/Kosfedev/auth/internal/client/db"
 	"github.com/Kosfedev/auth/internal/client/db/pg"
+	"github.com/Kosfedev/auth/internal/client/db/transaction"
 	"github.com/Kosfedev/auth/internal/closer"
 	"github.com/Kosfedev/auth/internal/config"
 	"github.com/Kosfedev/auth/internal/repository"
 	userRepository "github.com/Kosfedev/auth/internal/repository/user"
-	userService "github.com/Kosfedev/auth/internal/service"
+	userServInterface "github.com/Kosfedev/auth/internal/service"
+	userService "github.com/Kosfedev/auth/internal/service/user"
 )
 
 type serviceProvider struct {
 	pgConfig config.PGConfig
 
-	dbClient db.Client
+	dbClient  db.Client
+	txManager db.TxManager
 
 	userRepository repository.UserRepository
-	userService    userService.UserService
+	userService    userServInterface.UserService
 	userImpl       *user.Implementation
 }
 
@@ -60,6 +63,14 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	return s.dbClient
 }
 
+func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
+	if s.txManager == nil {
+		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
+	}
+
+	return s.txManager
+}
+
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
 		s.userRepository = userRepository.NewRepository(s.DBClient(ctx))
@@ -68,10 +79,11 @@ func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRep
 	return s.userRepository
 }
 
-func (s *serviceProvider) UserService(ctx context.Context) userService.UserService {
+func (s *serviceProvider) UserService(ctx context.Context) userServInterface.UserService {
 	if s.userService == nil {
-		s.userService = userService.UserService(
+		s.userService = userService.NewService(
 			s.UserRepository(ctx),
+			s.TxManager(ctx),
 		)
 	}
 
