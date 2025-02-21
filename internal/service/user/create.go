@@ -15,6 +15,8 @@ func (s *serv) Create(ctx context.Context, userData *model.NewUserData) (int64, 
 			return errTx
 		}
 
+		// дополнительный запрос в базу для демонстрации трансакции
+		// TODO: убрать, когда появится реальная логика для трансакции
 		_, errTx = s.userRepository.Get(ctx, id)
 		if errTx != nil {
 			return errTx
