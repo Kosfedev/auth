@@ -37,7 +37,7 @@ func NewRepository(db db.Client) repository.UserRepository {
 }
 
 func (r *repo) Create(ctx context.Context, userData *model.NewUserData) (int64, error) {
-	passHash, err := hashPassword(userData.Password)
+	passHash, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 10)
 	if err != nil {
 		return 0, err
 	}
@@ -150,10 +150,4 @@ func (r *repo) Delete(ctx context.Context, id int64) error {
 	}
 
 	return nil
-}
-
-// TODO: relocate
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	return string(bytes), err
 }
