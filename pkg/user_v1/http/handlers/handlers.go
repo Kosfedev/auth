@@ -6,8 +6,7 @@ import (
 	"strconv"
 
 	userImplementation "github.com/Kosfedev/auth/internal/api/user"
-	"github.com/Kosfedev/auth/internal/model"
-	"github.com/Kosfedev/auth/pkg/user_v1/http/types"
+	modelHTTP "github.com/Kosfedev/auth/pkg/user_v1/http/types"
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
 )
@@ -15,14 +14,14 @@ import (
 // TODO: Relocate
 var validate = validator.New()
 
-func validateStruct(data interface{}) *[]types.ValidationError {
-	var errors []types.ValidationError
+func validateStruct(data interface{}) *[]modelHTTP.ValidationError {
+	var errors []modelHTTP.ValidationError
 
 	err := validate.Struct(data)
 	if err != nil {
 		if errs, ok := err.(validator.ValidationErrors); ok {
 			for _, err := range errs {
-				errors = append(errors, types.ValidationError{
+				errors = append(errors, modelHTTP.ValidationError{
 					Field:     err.Field(),
 					Tag:       err.Tag(),
 					TagTarget: err.Param(),
@@ -39,14 +38,14 @@ func validateStruct(data interface{}) *[]types.ValidationError {
 
 // CreateUserHandler is...
 func CreateUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl userImplementation.Implementation) {
-	user := &model.NewUserData{}
+	user := &modelHTTP.RequestNewUserData{}
 	if err := json.NewDecoder(r.Body).Decode(user); err != nil {
 		http.Error(w, "Failed to decode new userImplementation data", http.StatusBadRequest)
 		return
 	}
 
 	if err := validateStruct(user); err != nil {
-		res := &types.ResponseValidationError{Errors: *err}
+		res := &modelHTTP.ResponseValidationError{Errors: *err}
 		httpErrorJSON(w, res, http.StatusBadRequest)
 		return
 	}
@@ -89,7 +88,7 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl user
 
 // PutUserHandler is...
 func PutUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl userImplementation.Implementation) {
-	updatedUser := &types.RequestUpdatedUserData{}
+	updatedUser := &modelHTTP.RequestUpdatedUserData{}
 	// TODO: const?
 	userIDStr := chi.URLParam(r, "id")
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
@@ -104,7 +103,7 @@ func PutUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl user
 	}
 
 	if err := validateStruct(updatedUser); err != nil {
-		res := &types.ResponseValidationError{Errors: *err}
+		res := &modelHTTP.ResponseValidationError{Errors: *err}
 		httpErrorJSON(w, res, http.StatusBadRequest)
 		return
 	}
