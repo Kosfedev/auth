@@ -5,18 +5,23 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Kosfedev/auth/internal/client/db"
+	clientDBMocks "github.com/Kosfedev/auth/internal/client/db/mocks"
 	modelService "github.com/Kosfedev/auth/internal/model"
 	"github.com/Kosfedev/auth/internal/repository"
 	repositoryMocks "github.com/Kosfedev/auth/internal/repository/mocks"
 	service "github.com/Kosfedev/auth/internal/service/user"
+
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
 )
 
+// TODO: починить. Тест говно и не работает. Полагаю, из-за нтрансактора
 func TestCreate(t *testing.T) {
 	t.Parallel()
 	type userRepoMockFunc func(mc *minimock.Controller) repository.UserRepository
+	type userTxManagerMockFunc func(mc *minimock.Controller) db.TxManager
 	type args struct {
 		ctx context.Context
 		req *modelService.NewUserData
@@ -44,11 +49,12 @@ func TestCreate(t *testing.T) {
 	defer t.Cleanup(mc.Finish)
 
 	tests := []struct {
-		name         string
-		args         args
-		want         int64
-		err          error
-		userRepoMock userRepoMockFunc
+		name              string
+		args              args
+		want              int64
+		err               error
+		userRepoMock      userRepoMockFunc
+		userTxManagerMock userTxManagerMockFunc
 	}{
 		{
 			name: "success case",
@@ -61,6 +67,11 @@ func TestCreate(t *testing.T) {
 			userRepoMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repositoryMocks.NewUserRepositoryMock(mc)
 				mock.CreateMock.Expect(ctx, req).Return(id, nil)
+				return mock
+			},
+			userTxManagerMock: func(mc *minimock.Controller) db.TxManager {
+				mock := clientDBMocks.NewTxManagerMock(mc)
+				mock.ReadCommittedMock.Return(nil)
 				return mock
 			},
 		},
@@ -77,6 +88,11 @@ func TestCreate(t *testing.T) {
 				mock.CreateMock.Expect(ctx, req).Return(0, serviceErr)
 				return mock
 			},
+			userTxManagerMock: func(mc *minimock.Controller) db.TxManager {
+				mock := clientDBMocks.NewTxManagerMock(mc)
+				mock.ReadCommittedMock.Return(serviceErr)
+				return mock
+			},
 		},
 	}
 
@@ -85,8 +101,8 @@ func TestCreate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			userRepoMock := test.userRepoMock(mc)
-			// TODO: add transactorMock
-			serviceMock := service.NewService(userRepoMock)
+			userTxManagerMock := test.userTxManagerMock(mc)
+			serviceMock := service.NewService(userRepoMock, userTxManagerMock)
 
 			newID, err := serviceMock.Create(test.args.ctx, test.args.req)
 			require.Equal(t, test.err, err)
