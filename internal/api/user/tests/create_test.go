@@ -16,6 +16,7 @@ import (
 )
 
 func TestCreate(t *testing.T) {
+	t.Parallel()
 	type userServiceMockFunc func(mc *minimock.Controller) service.UserService
 
 	type args struct {
@@ -96,6 +97,7 @@ func TestCreate(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
 			userServiceMock := test.userServiceMock(mc)
 			api := userImpl.NewImplementation(userServiceMock)
 
