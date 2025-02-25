@@ -47,7 +47,6 @@ func (m *manager) transaction(ctx context.Context, opts pgx.TxOptions, fn db.Han
 
 		// откатываем транзакцию, если произошла ошибка
 		if err != nil {
-			// TODO: !!! rollback не выбрасывает ошбку, но по факту не отрабатывает
 			if errRollback := tx.Rollback(ctx); errRollback != nil {
 				err = errors.Wrapf(err, "errRollback: %v", errRollback)
 			}

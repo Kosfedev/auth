@@ -38,7 +38,7 @@ func (s *serviceProvider) PGConfig() config.PGConfig {
 			log.Fatalf("failed to get pg config: %s", err.Error())
 		}
 
-		return cfg
+		s.pgConfig = cfg
 	}
 
 	return s.pgConfig
