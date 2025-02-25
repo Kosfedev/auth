@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Kosfedev/auth/internal/client/db"
 	"github.com/Kosfedev/auth/internal/model"
 	"github.com/Kosfedev/auth/internal/repository"
 	"github.com/Kosfedev/auth/internal/repository/user/converter"
 	modelRepo "github.com/Kosfedev/auth/internal/repository/user/model"
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -26,18 +26,18 @@ const (
 )
 
 type repo struct {
-	con *pgx.Conn
+	db db.Client
 }
 
 // NewRepository is ...
-func NewRepository(con *pgx.Conn) repository.UserRepository {
+func NewRepository(db db.Client) repository.UserRepository {
 	return &repo{
-		con: con,
+		db: db,
 	}
 }
 
 func (r *repo) Create(ctx context.Context, userData *model.NewUserData) (int64, error) {
-	passHash, err := hashPassword(userData.Password)
+	passHash, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 10)
 	if err != nil {
 		return 0, err
 	}
@@ -53,28 +53,39 @@ func (r *repo) Create(ctx context.Context, userData *model.NewUserData) (int64, 
 		return 0, err
 	}
 
-	var userID int64
-	err = r.con.QueryRow(ctx, query, args...).Scan(&userID)
+	q := db.Query{
+		Name:     "user_repository.Create",
+		QueryRaw: query,
+	}
+
+	var id int64
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
 
-	return userID, nil
+	return id, nil
 }
 
 func (r *repo) Get(ctx context.Context, id int64) (*model.UserData, error) {
 	builderSelect := sq.Select(columnID, columnName, columnEmail, columnRole, columnCreatedAt, columnUpdatedAt).
 		From(tableAuth).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{columnID: id})
+		Where(sq.Eq{columnID: id}).
+		Limit(1)
 
 	query, args, err := builderSelect.ToSql()
 	if err != nil {
 		return nil, err
 	}
 
+	q := db.Query{
+		Name:     "user_repository.Get",
+		QueryRaw: query,
+	}
+
 	var user = &modelRepo.UserData{}
-	err = r.con.QueryRow(ctx, query, args...).Scan(&user.ID, &user.Name, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+	err = r.db.DB().ScanOneContext(ctx, user, q, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -104,8 +115,13 @@ func (r *repo) Patch(ctx context.Context, userData *model.UpdatedUserData, id in
 		return nil, err
 	}
 
+	q := db.Query{
+		Name:     "user_repository.Patch",
+		QueryRaw: query,
+	}
+
 	var user = &modelRepo.UserData{}
-	err = r.con.QueryRow(ctx, query, args...).Scan(&user.ID, &user.Name, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+	err = r.db.DB().ScanOneContext(ctx, user, q, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -123,16 +139,15 @@ func (r *repo) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 
-	_, err = r.con.Exec(ctx, query, args...)
+	q := db.Query{
+		Name:     "user_repository.Delete",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-// TODO: relocate
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	return string(bytes), err
 }

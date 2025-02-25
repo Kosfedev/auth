@@ -3,69 +3,20 @@ package main
 import (
 	"context"
 	"log"
-	"net/http"
-	"time"
 
-	userImplementation "github.com/Kosfedev/auth/internal/api/user"
-	"github.com/Kosfedev/auth/internal/config"
-	userRepository "github.com/Kosfedev/auth/internal/repository/user"
-	userService "github.com/Kosfedev/auth/internal/service/user"
-	"github.com/go-chi/chi"
-	"github.com/jackc/pgx/v5"
+	"github.com/Kosfedev/auth/internal/app"
 )
-
-const (
-	configPath     = ".env"
-	baseURL        = "localhost:8081"
-	usersPostfix   = "/users"
-	userPostfix    = usersPostfix + "/{id}"
-	defaultTimeout = time.Second * 5
-)
-
-var userServiceImpl *userImplementation.Implementation
 
 func main() {
-	err := config.Load(configPath)
-	if err != nil {
-		log.Fatalf("failed to load config \"%v\": %v", configPath, err)
-	}
-
 	ctx := context.Background()
-	cnf, err := config.NewPGConfig()
+
+	a, err := app.NewApp(ctx)
 	if err != nil {
-		log.Fatalf("failed to get pg config: %s", err.Error())
-	}
-	pgDSN := cnf.DSN()
-
-	con, err := pgx.Connect(ctx, pgDSN)
-	if err != nil {
-		log.Fatalf("failed to establish connection to \"%v\": %v", pgDSN, err.Error())
-	}
-	defer func(ctx context.Context, con *pgx.Conn) {
-		if err := con.Close(ctx); err != nil {
-			log.Printf("Error while closing connection: %+v\n", err)
-		}
-	}(ctx, con)
-
-	userRepo := userRepository.NewRepository(con)
-	userSrv := userService.NewService(userRepo)
-	userServiceImpl = userImplementation.NewImplementation(userSrv)
-
-	r := chi.NewRouter()
-	r.Post(usersPostfix, createUserHandler)
-	r.Get(userPostfix, getUserHandler)
-	r.Put(userPostfix, updateUserHandler)
-	r.Delete(userPostfix, deleteUserHandler)
-
-	server := http.Server{
-		Addr:         baseURL,
-		Handler:      r,
-		ReadTimeout:  defaultTimeout,
-		WriteTimeout: defaultTimeout,
+		log.Fatalf("failed to init app: %s", err.Error())
 	}
 
-	err = server.ListenAndServe()
+	err = a.Run()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to run app: %s", err.Error())
 	}
 }
