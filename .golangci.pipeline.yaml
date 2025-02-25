@@ -26,7 +26,6 @@ linters-settings:
     shadow: true
   dupl:
     threshold: 100
-    test123: false
   goconst:
     min-len: 2
     min-occurrences: 2
