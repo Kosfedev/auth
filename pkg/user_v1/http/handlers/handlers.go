@@ -11,6 +11,8 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+const queryParamID = "id"
+
 // TODO: Relocate
 var validate = validator.New()
 
@@ -66,7 +68,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl u
 
 // GetUserHandler is...
 func GetUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl userImplementation.Implementation) {
-	userIDStr := chi.URLParam(r, "id")
+	userIDStr := chi.URLParam(r, queryParamID)
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid userImplementation ID", http.StatusBadRequest)
@@ -86,11 +88,10 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl user
 	}
 }
 
-// PutUserHandler is...
-func PutUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl userImplementation.Implementation) {
+// PatchUserHandler is...
+func PatchUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl userImplementation.Implementation) {
 	updatedUser := &modelHTTP.RequestUpdatedUserData{}
-	// TODO: const?
-	userIDStr := chi.URLParam(r, "id")
+	userIDStr := chi.URLParam(r, queryParamID)
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid userImplementation ID", http.StatusBadRequest)
@@ -124,8 +125,7 @@ func PutUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl user
 
 // DeleteUserHandler is...
 func DeleteUserHandler(w http.ResponseWriter, r *http.Request, userServiceImpl userImplementation.Implementation) {
-	// TODO: const?
-	userIDStr := chi.URLParam(r, "id")
+	userIDStr := chi.URLParam(r, queryParamID)
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid userImplementation ID", http.StatusBadRequest)
