@@ -2,7 +2,7 @@ package converter
 
 import (
 	"github.com/Kosfedev/auth/internal/model"
-	modelRepo "github.com/Kosfedev/auth/internal/repository/user/model"
+	modelRepo "github.com/Kosfedev/auth/internal/repository/user/pg/model"
 )
 
 // UserDataFromRepo is...

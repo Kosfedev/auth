@@ -4,10 +4,11 @@ import "time"
 
 // NewUserData is ...
 type NewUserData struct {
-	Name            string
-	Email           string
-	Role            uint8
-	Password        string
+	Name     string
+	Email    string
+	Role     uint8
+	Password string
+	// TODO: убрать с репо слоя
 	PasswordConfirm string
 }
 
