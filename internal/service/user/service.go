@@ -8,7 +8,7 @@ import (
 
 type serv struct {
 	userRepository      repository.UserRepository
-	userRepositoryCache repository.UserCacheRepository
+	userCacheRepository repository.UserCacheRepository
 	txManager           db.TxManager
 }
 
@@ -16,7 +16,7 @@ type serv struct {
 func NewService(userRepository repository.UserRepository, userRepositoryCache repository.UserCacheRepository, txManager db.TxManager) service.UserService {
 	return &serv{
 		userRepository:      userRepository,
-		userRepositoryCache: userRepositoryCache,
+		userCacheRepository: userRepositoryCache,
 		txManager:           txManager,
 	}
 }

@@ -27,6 +27,7 @@ type redisConfig struct {
 	idleTimeout time.Duration
 }
 
+// NewRedisConfig is...
 func NewRedisConfig() (*redisConfig, error) {
 	host := os.Getenv(redisHostEnvName)
 	if len(host) == 0 {

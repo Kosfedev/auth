@@ -11,6 +11,7 @@ type PGConfig interface {
 	DSN() string
 }
 
+// RedisConfig is...
 type RedisConfig interface {
 	Address() string
 	ConnectionTimeout() time.Duration

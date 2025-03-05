@@ -13,7 +13,7 @@ func (s *serv) Patch(ctx context.Context, userData *model.UpdatedUserData, id in
 		return nil, err
 	}
 
-	_, err = s.userRepositoryCache.Create(ctx, updatedData)
+	_, err = s.userCacheRepository.Create(ctx, updatedData)
 
 	return updatedData, err
 }

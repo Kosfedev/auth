@@ -21,6 +21,7 @@ import (
 func TestCreate(t *testing.T) {
 	t.Parallel()
 	type userRepoMockFunc func(mc *minimock.Controller) repository.UserRepository
+	type userCacheRepoMockFunc func(mc *minimock.Controller) repository.UserCacheRepository
 	type userTxManagerMockFunc func(mc *minimock.Controller) db.TxManager
 	type args struct {
 		ctx context.Context
@@ -54,6 +55,7 @@ func TestCreate(t *testing.T) {
 		want              int64
 		err               error
 		userRepoMock      userRepoMockFunc
+		userCacheRepoMock userCacheRepoMockFunc
 		userTxManagerMock userTxManagerMockFunc
 	}{
 		{
@@ -67,6 +69,10 @@ func TestCreate(t *testing.T) {
 			userRepoMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repositoryMocks.NewUserRepositoryMock(mc)
 				mock.CreateMock.Expect(ctx, req).Return(id, nil)
+				return mock
+			},
+			userCacheRepoMock: func(mc *minimock.Controller) repository.UserCacheRepository {
+				mock := repositoryMocks.NewUserCacheRepositoryMock(mc)
 				return mock
 			},
 			userTxManagerMock: func(mc *minimock.Controller) db.TxManager {
@@ -88,6 +94,10 @@ func TestCreate(t *testing.T) {
 				mock.CreateMock.Expect(ctx, req).Return(0, serviceErr)
 				return mock
 			},
+			userCacheRepoMock: func(mc *minimock.Controller) repository.UserCacheRepository {
+				mock := repositoryMocks.NewUserCacheRepositoryMock(mc)
+				return mock
+			},
 			userTxManagerMock: func(mc *minimock.Controller) db.TxManager {
 				mock := clientDBMocks.NewTxManagerMock(mc)
 				mock.ReadCommittedMock.Return(serviceErr)
@@ -101,8 +111,9 @@ func TestCreate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			userRepoMock := test.userRepoMock(mc)
+			userCacheRepoMock := test.userCacheRepoMock(mc)
 			userTxManagerMock := test.userTxManagerMock(mc)
-			serviceMock := service.NewService(userRepoMock, userTxManagerMock)
+			serviceMock := service.NewService(userRepoMock, userCacheRepoMock, userTxManagerMock)
 
 			newID, err := serviceMock.Create(test.args.ctx, test.args.req)
 			require.Equal(t, test.err, err)

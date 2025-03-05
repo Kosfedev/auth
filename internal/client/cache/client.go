@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// RedisClient is...
 type RedisClient interface {
 	Set(ctx context.Context, key string, value interface{}) error
 	HSet(ctx context.Context, key string, value interface{}) error

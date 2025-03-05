@@ -31,6 +31,7 @@ type repo struct {
 	cl cache.RedisClient
 }
 
+// NewRepository is...
 func NewRepository(cl cache.RedisClient) *repo {
 	return &repo{cl: cl}
 }
