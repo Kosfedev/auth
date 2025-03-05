@@ -94,8 +94,21 @@ func (c *client) Get(ctx context.Context, key string) (interface{}, error) {
 	return value, nil
 }
 
+func (c *client) Del(ctx context.Context, key string) error {
+	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+		_, err := redis.Values(conn.Do("Del", key))
+
+		return err
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *client) HDel(ctx context.Context, key string, fields ...string) error {
-	return c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
 		var err error
 
 		for _, field := range fields {
@@ -108,14 +121,11 @@ func (c *client) HDel(ctx context.Context, key string, fields ...string) error {
 
 		return err
 	})
-}
-
-func (c *client) Del(ctx context.Context, key string) error {
-	return c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
-		_, err := redis.Values(conn.Do("Del", key))
-
+	if err != nil {
 		return err
-	})
+	}
+
+	return nil
 }
 
 func (c *client) Expire(ctx context.Context, key string, expiration time.Duration) error {

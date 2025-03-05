@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/Kosfedev/auth/internal/repository"
 	redigo "github.com/gomodule/redigo/redis"
@@ -11,6 +12,17 @@ import (
 	modelService "github.com/Kosfedev/auth/internal/model"
 	"github.com/Kosfedev/auth/internal/repository/user/redis/converter"
 	modelRepo "github.com/Kosfedev/auth/internal/repository/user/redis/model"
+)
+
+// TODO: нарушение DRY? Хочется мапить с типа UserData
+const (
+	redisFieldID        = "id"
+	redisFieldName      = "name"
+	redisFieldEmail     = "email"
+	redisFieldRole      = "role"
+	redisFieldCreatedAt = "created_at"
+	redisFieldUpdatedAt = "updated_at"
+	redisExpire         = time.Duration(5) * time.Minute
 )
 
 var _ repository.UserCacheRepository = (*repo)(nil)
@@ -31,6 +43,10 @@ func (r *repo) Create(ctx context.Context, userData *modelService.UserData) (int
 	if err != nil {
 		return 0, err
 	}
+	err = r.cl.Expire(ctx, idStr, redisExpire)
+	if err != nil {
+		return 0, err
+	}
 
 	return userData.ID, nil
 }
@@ -43,7 +59,7 @@ func (r *repo) Get(ctx context.Context, id int64) (*modelService.UserData, error
 	}
 
 	if len(values) == 0 {
-		return nil, modelService.ErrorNoteNotFound
+		return nil, modelService.ErrorUserNotFound
 	}
 
 	var user modelRepo.UserData
@@ -58,29 +74,5 @@ func (r *repo) Get(ctx context.Context, id int64) (*modelService.UserData, error
 func (r *repo) Delete(ctx context.Context, id int64) error {
 	idStr := strconv.FormatInt(id, 10)
 
-	// TODO: нарушение DRY
-	err := r.cl.HDel(ctx, idStr, "id", "name", "email", "role", "created_at", "updated_at")
-
-	return err
-}
-
-// TODO:убрать методы заглушки (не нужны для кеширования)
-func (r *repo) Patch(ctx context.Context, userData *modelService.UpdatedUserData, id int64) (*modelService.UserData, error) {
-	idStr := strconv.FormatInt(id, 10)
-	values, err := r.cl.HGetAll(ctx, idStr)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(values) == 0 {
-		return nil, modelService.ErrorNoteNotFound
-	}
-
-	var user modelRepo.UserData
-	err = redigo.ScanStruct(values, &user)
-	if err != nil {
-		return nil, err
-	}
-
-	return converter.UserDataFromRepo(&user), nil
+	return r.cl.HDel(ctx, idStr, redisFieldID, redisFieldName, redisFieldEmail, redisFieldRole, redisFieldCreatedAt, redisFieldUpdatedAt)
 }
