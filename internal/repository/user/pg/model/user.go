@@ -4,11 +4,10 @@ import "time"
 
 // NewUserData is ...
 type NewUserData struct {
-	Name            string
-	Email           string
-	Role            uint8
-	Password        string
-	PasswordConfirm string
+	Name     string
+	Email    string
+	Role     uint8
+	Password string
 }
 
 // UserData is ...

@@ -1,4 +1,4 @@
-package user
+package pg
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"github.com/Kosfedev/auth/internal/client/db"
 	"github.com/Kosfedev/auth/internal/model"
 	"github.com/Kosfedev/auth/internal/repository"
-	"github.com/Kosfedev/auth/internal/repository/user/converter"
-	modelRepo "github.com/Kosfedev/auth/internal/repository/user/model"
+	"github.com/Kosfedev/auth/internal/repository/user/pg/converter"
+	modelRepo "github.com/Kosfedev/auth/internal/repository/user/pg/model"
 	sq "github.com/Masterminds/squirrel"
 	"golang.org/x/crypto/bcrypt"
 )

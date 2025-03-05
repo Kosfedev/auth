@@ -22,6 +22,15 @@ type ResponseUserID struct {
 	ID int64 `json:"id"`
 }
 
+// RequestNewUserData is ...
+type RequestNewUserData struct {
+	Name            string `json:"name" validate:"required"`
+	Email           string `json:"email" validate:"required,email"`
+	Role            uint8  `json:"role" validate:"required"`
+	Password        string `json:"password" validate:"required,min=5"`
+	PasswordConfirm string `json:"password_confirm" validate:"required,eqfield=Password"`
+}
+
 // RequestUpdatedUserData is ...
 type RequestUpdatedUserData struct {
 	Name  *string `json:"name"`
