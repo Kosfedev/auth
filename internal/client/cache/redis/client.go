@@ -94,19 +94,27 @@ func (c *client) Get(ctx context.Context, key string) (interface{}, error) {
 	return value, nil
 }
 
-func (c *client) HDel(ctx context.Context, key string) error {
+func (c *client) HDel(ctx context.Context, key string, fields ...string) error {
 	return c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
-		_, errEx := redis.Values(conn.Do("HDel", key))
+		var err error
 
-		return errEx
+		for _, field := range fields {
+			_, err = conn.Do("HDel", key, field)
+
+			if err != nil {
+				return err
+			}
+		}
+
+		return err
 	})
 }
 
 func (c *client) Del(ctx context.Context, key string) error {
 	return c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
-		_, errEx := redis.Values(conn.Do("Del", key))
+		_, err := redis.Values(conn.Do("Del", key))
 
-		return errEx
+		return err
 	})
 }
 

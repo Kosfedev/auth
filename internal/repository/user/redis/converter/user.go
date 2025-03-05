@@ -17,13 +17,13 @@ func UserDataFromRepo(userData *modelRepo.UserData) *modelService.UserData {
 	}
 }
 
-// UserDataFromRepo is...
-func NewUserDataToRepo(userData *modelService.NewUserData) *modelRepo.NewUserData {
-	return &modelRepo.NewUserData{
-		Name:            userData.Name,
-		Email:           userData.Email,
-		Role:            userData.Role,
-		Password:        userData.Password,
-		PasswordConfirm: userData.PasswordConfirm,
+// UserDataToRepo is...
+func UserDataToRepo(userData *modelService.UserData) *modelRepo.UserData {
+	return &modelRepo.UserData{
+		Name:      userData.Name,
+		Email:     userData.Email,
+		Role:      userData.Role,
+		CreatedAt: userData.CreatedAt,
+		UpdatedAt: userData.UpdatedAt,
 	}
 }

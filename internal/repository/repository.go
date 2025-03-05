@@ -13,3 +13,10 @@ type UserRepository interface {
 	Patch(ctx context.Context, userData *model.UpdatedUserData, id int64) (*model.UserData, error)
 	Delete(ctx context.Context, id int64) error
 }
+
+// UserCacheRepository is ...
+type UserCacheRepository interface {
+	Create(ctx context.Context, userData *model.UserData) (int64, error)
+	Get(ctx context.Context, id int64) (*model.UserData, error)
+	Delete(ctx context.Context, id int64) error
+}

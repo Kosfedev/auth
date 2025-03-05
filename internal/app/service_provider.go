@@ -14,6 +14,7 @@ import (
 	"github.com/Kosfedev/auth/internal/config"
 	"github.com/Kosfedev/auth/internal/config/env"
 	"github.com/Kosfedev/auth/internal/repository"
+	userRepositoryPg "github.com/Kosfedev/auth/internal/repository/user/pg"
 	userRepositoryRedis "github.com/Kosfedev/auth/internal/repository/user/redis"
 	userServInterface "github.com/Kosfedev/auth/internal/service"
 	userService "github.com/Kosfedev/auth/internal/service/user"
@@ -31,9 +32,10 @@ type serviceProvider struct {
 	redisPool   *redigo.Pool
 	redisClient cache.RedisClient
 
-	userRepository repository.UserRepository
-	userService    userServInterface.UserService
-	userImpl       *user.Implementation
+	userRepository      repository.UserRepository
+	userCacheRepository repository.UserCacheRepository
+	userService         userServInterface.UserService
+	userImpl            *user.Implementation
 }
 
 func newServiceProvider() *serviceProvider {
@@ -111,29 +113,33 @@ func (s *serviceProvider) RedisPool() *redigo.Pool {
 
 func (s *serviceProvider) RedisClient() cache.RedisClient {
 	if s.redisClient == nil {
-		s.redisClient = redis.NewClient(s.redisPool, s.RedisConfig())
+		s.redisClient = redis.NewClient(s.RedisPool(), s.RedisConfig())
 	}
 
 	return s.redisClient
 }
 
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
-	// TODO: fix
-	/*	if s.userRepository == nil {
-			s.userRepository = userRepositoryPg.NewRepository(s.DBClient(ctx))
-		}
-	*/
 	if s.userRepository == nil {
-		s.userRepository = userRepositoryRedis.NewRepository(s.RedisClient())
+		s.userRepository = userRepositoryPg.NewRepository(s.DBClient(ctx))
 	}
 
 	return s.userRepository
+}
+
+func (s *serviceProvider) UserCacheRepository() repository.UserCacheRepository {
+	if s.userCacheRepository == nil {
+		s.userCacheRepository = userRepositoryRedis.NewRepository(s.RedisClient())
+	}
+
+	return s.userCacheRepository
 }
 
 func (s *serviceProvider) UserService(ctx context.Context) userServInterface.UserService {
 	if s.userService == nil {
 		s.userService = userService.NewService(
 			s.UserRepository(ctx),
+			s.UserCacheRepository(),
 			s.TxManager(ctx),
 		)
 	}
