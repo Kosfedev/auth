@@ -8,8 +8,6 @@ type NewUserData struct {
 	Email    string
 	Role     uint8
 	Password string
-	// TODO: убрать с репо слоя
-	PasswordConfirm string
 }
 
 // UserData is ...
