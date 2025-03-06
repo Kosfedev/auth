@@ -21,6 +21,9 @@ func (s *serv) Get(ctx context.Context, id int64) (*model.UserData, error) {
 			return nil, err
 		}
 	}
+	if err != nil {
+		return nil, err
+	}
 
-	return userData, err
+	return userData, nil
 }

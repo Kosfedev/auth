@@ -14,6 +14,9 @@ func (s *serv) Patch(ctx context.Context, userData *model.UpdatedUserData, id in
 	}
 
 	_, err = s.userCacheRepository.Create(ctx, updatedData)
+	if err != nil {
+		return nil, err
+	}
 
-	return updatedData, err
+	return updatedData, nil
 }
