@@ -6,6 +6,17 @@ import (
 	"github.com/Kosfedev/auth/internal/model"
 )
 
+// TODO: добавить трансактор?
 func (s *serv) Patch(ctx context.Context, userData *model.UpdatedUserData, id int64) (*model.UserData, error) {
-	return s.userRepository.Patch(ctx, userData, id)
+	updatedData, err := s.userRepository.Patch(ctx, userData, id)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.userCacheRepository.Create(ctx, updatedData)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedData, nil
 }

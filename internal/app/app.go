@@ -90,7 +90,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 		handlers.GetUserHandler(w, r, *a.serviceProvider.userImpl)
 	})
 	r.Patch(userPostfix, func(w http.ResponseWriter, r *http.Request) {
-		handlers.PutUserHandler(w, r, *a.serviceProvider.userImpl)
+		handlers.PatchUserHandler(w, r, *a.serviceProvider.userImpl)
 	})
 	r.Delete(userPostfix, func(w http.ResponseWriter, r *http.Request) {
 		handlers.DeleteUserHandler(w, r, *a.serviceProvider.userImpl)
