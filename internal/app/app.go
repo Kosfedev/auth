@@ -11,18 +11,17 @@ import (
 
 	"github.com/Kosfedev/auth/internal/closer"
 	"github.com/Kosfedev/auth/internal/config"
-	auth_v1 "github.com/Kosfedev/auth/pkg/user_v1/gRPC"
+	desc "github.com/Kosfedev/auth/pkg/user_v1/gRPC"
+	gRPCServer "github.com/Kosfedev/auth/pkg/user_v1/gRPC/server"
 	"github.com/Kosfedev/auth/pkg/user_v1/http/handlers"
-	"github.com/brianvoe/gofakeit"
 	"github.com/go-chi/chi"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
 	configPath     = ".env"
-	baseURL        = "localhost"
+	pathname       = "localhost"
 	httpPort       = 8081
 	grpcPort       = 8082
 	usersPostfix   = "/users"
@@ -129,7 +128,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 
 func (a *App) runHTTPServer() error {
 	server := http.Server{
-		Addr:         fmt.Sprintf("%s:%d", baseURL, httpPort),
+		Addr:         fmt.Sprintf("%s:%d", pathname, httpPort),
 		Handler:      a.router,
 		ReadTimeout:  defaultTimeout,
 		WriteTimeout: defaultTimeout,
@@ -139,32 +138,15 @@ func (a *App) runHTTPServer() error {
 	return server.ListenAndServe()
 }
 
-type gRPCServer struct {
-	auth_v1.UnimplementedAuthV1Server
-}
-
-func (s *gRPCServer) Get(ctx context.Context, req *auth_v1.GetRequest) (*auth_v1.GetResponse, error) {
-	log.Printf("user id: %d\n", req.GetId())
-
-	return &auth_v1.GetResponse{
-		Id:        req.GetId(),
-		Name:      gofakeit.Name(),
-		Email:     gofakeit.Email(),
-		Role:      gofakeit.Uint32(),
-		CreatedAt: timestamppb.New(gofakeit.Date()),
-		UpdatedAt: timestamppb.New(gofakeit.Date()),
-	}, nil
-}
-
 func (a *App) runGRPCServer() error {
-	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", baseURL, grpcPort))
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", pathname, grpcPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	auth_v1.RegisterAuthV1Server(s, &gRPCServer{})
+	desc.RegisterAuthV1Server(s, &gRPCServer.Server{})
 
 	log.Printf("gRPC server listening on :%d\n", grpcPort)
 	return s.Serve(lis)
