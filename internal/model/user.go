@@ -4,8 +4,9 @@ import "time"
 
 // NewUserData is ...
 type NewUserData struct {
-	Name            string `json:"name" validate:"required"`
-	Email           string `json:"email" validate:"required,email"`
+	Name  string `json:"name" validate:"required"`
+	Email string `json:"email" validate:"required,email"`
+	// TODO: заменить на uint32 для соответствия протобафу
 	Role            uint8  `json:"role" validate:"required"`
 	Password        string `json:"password" validate:"required,min=5"`
 	PasswordConfirm string `json:"password_confirm" validate:"required,eqfield=Password"`
@@ -13,9 +14,10 @@ type NewUserData struct {
 
 // UserData is ...
 type UserData struct {
-	ID        int64      `json:"id"`
-	Name      string     `json:"name"`
-	Email     string     `json:"email"`
+	ID    int64  `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	// TODO: заменить на uint32 для соответствия протобафу
 	Role      uint8      `json:"role"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
