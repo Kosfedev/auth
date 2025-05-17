@@ -29,7 +29,7 @@ func (s *Server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 		Id:        req.GetId(),
 		Name:      gofakeit.Name(),
 		Email:     gofakeit.Email(),
-		Role:      gofakeit.Uint32(),
+		Role:      1,
 		CreatedAt: timestamppb.New(gofakeit.Date()),
 		UpdatedAt: timestamppb.New(gofakeit.Date()),
 	}, nil
