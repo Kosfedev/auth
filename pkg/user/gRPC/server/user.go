@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	desc "github.com/Kosfedev/auth/pkg/user_v1/gRPC"
+	desc "github.com/Kosfedev/auth/pkg/user/gRPC"
 	"github.com/brianvoe/gofakeit"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"

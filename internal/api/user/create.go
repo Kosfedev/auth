@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/Kosfedev/auth/internal/model"
-	modelHTTP "github.com/Kosfedev/auth/pkg/user_v1/http/types"
+	modelHTTP "github.com/Kosfedev/auth/pkg/user/http/types"
 )
 
 // Create is...

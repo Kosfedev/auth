@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/Kosfedev/auth/internal/converter"
-	modelHTTP "github.com/Kosfedev/auth/pkg/user_v1/http/types"
+	modelHTTP "github.com/Kosfedev/auth/pkg/user/http/types"
 )
 
 // Patch is...

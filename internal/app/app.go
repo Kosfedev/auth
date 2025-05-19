@@ -11,9 +11,9 @@ import (
 
 	"github.com/Kosfedev/auth/internal/closer"
 	"github.com/Kosfedev/auth/internal/config"
-	desc "github.com/Kosfedev/auth/pkg/user_v1/gRPC"
-	gRPCServer "github.com/Kosfedev/auth/pkg/user_v1/gRPC/server"
-	"github.com/Kosfedev/auth/pkg/user_v1/http/handlers"
+	desc "github.com/Kosfedev/auth/pkg/user/gRPC"
+	gRPCServer "github.com/Kosfedev/auth/pkg/user/gRPC/server"
+	"github.com/Kosfedev/auth/pkg/user/http/handlers"
 	"github.com/go-chi/chi"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"

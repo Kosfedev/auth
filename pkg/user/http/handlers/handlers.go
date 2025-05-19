@@ -7,7 +7,7 @@ import (
 
 	userImplementation "github.com/Kosfedev/auth/internal/api/user"
 	"github.com/Kosfedev/auth/internal/model"
-	"github.com/Kosfedev/auth/pkg/user_v1/http/types"
+	"github.com/Kosfedev/auth/pkg/user/http/types"
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
 )
